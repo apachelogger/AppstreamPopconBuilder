@@ -19,6 +19,8 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
+require 'fileutils'
+
 load_path = '/var/lib/jenkins/ci-tooling'
 require "#{load_path}/lib/apt"
 require "#{load_path}/lib/retry"
@@ -33,9 +35,10 @@ Retry.retry_it(times: 2, sleep: 16) { Apt.update }
 
 abort unless system('appstreamcli refresh')
 
-Dir.mkdir('build') unless Dir.exist?('build')
+FileUtils.rm_rf('build') if Dir.exist?('build')
+Dir.mkdir('build')
 Dir.chdir('build') do
-  abort unless system('cmake ..')
+  abort unless system('cmake ../source')
   abort unless system("make -j#{`nproc`.strip}")
 end
 
